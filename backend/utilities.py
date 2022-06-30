@@ -3,7 +3,7 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
 
-USERS_TABLE = 'Users' # PK = user_id
+USERS_TABLE = 'Users' # PK = username
 RESOURCES_TABLE = 'Resources' # PK = resource_id
 BOOKINGS_TABLE = 'Bookings' # PK = resource_id and start
 
@@ -20,11 +20,11 @@ resources_table = dynamodb.Table(RESOURCES_TABLE)
 bookings_table = dynamodb.Table(BOOKINGS_TABLE)
 
 
-def get_upcoming_bookings(user_id, days):
+def get_upcoming_bookings(username, days):
     now = datetime.now()
     period_end = now + datetime.timedelta(days=days)
     response = bookings_table.query(
-        FilterExpression = Attr('user_id').eq(user_id) & Attr('start').between(now, period_end)
+        FilterExpression = Attr('username').eq(username) & Attr('start').between(now, period_end)
     )
     return response['Items']
 
@@ -42,5 +42,22 @@ def is_resource_available(resource_id, start, finish):
     return number_of_bookings == 0
 
 
-def add_booking(user_id, resource_id, start, finish):
-    pass
+def add_booking(resource_id, username, start, finish):
+    response = bookings_table.put_item(
+        Item = {
+            'resource_id': resource_id,
+            'username': username,
+            'start': start,
+            'finish': finish
+        }
+    )
+
+
+def add_user(username, screen_name, email):
+    response = users_table.put_item(
+        Item = {
+            'username': username,
+            'screen_name': screen_name,
+            'email': email
+        }
+    )
