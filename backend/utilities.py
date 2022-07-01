@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
 
 USERS_TABLE = 'Users' # PK = username
-RESOURCES_TABLE = 'Resources' # PK = resource_id
+RESOURCES_TABLE = 'Resources' # PK = id
 BOOKINGS_TABLE = 'Bookings' # PK = resource_id and start
 
 
@@ -12,7 +12,7 @@ TIMESLOT_HOUR_GRANULARITY = 1
 ADVANCE_BOOK_WEEKS_LIMIT = 1
 
 
-dynamodb = boto3.resource('dynamodb', region_name="eu_west-1")
+dynamodb = boto3.resource('dynamodb', region_name="eu-west-1")
 
 
 users_table = dynamodb.Table(USERS_TABLE)
@@ -20,11 +20,12 @@ resources_table = dynamodb.Table(RESOURCES_TABLE)
 bookings_table = dynamodb.Table(BOOKINGS_TABLE)
 
 
-def get_upcoming_bookings(username, days):
-    now = datetime.now()
-    period_end = now + datetime.timedelta(days=days)
+def upcoming_user_bookings(username, days=14):
+    now = datetime.now().isoformat(" ","auto")
+    period_end = (datetime.now() + timedelta(days=days)).isoformat(" ","auto")
     response = bookings_table.query(
-        FilterExpression = Attr('username').eq(username) & Attr('start').between(now, period_end)
+        IndexName = 'username-start-index',
+        KeyConditionExpression = Key('username').eq(username) & Key('start').between(now, period_end)
     )
     return response['Items']
 
@@ -53,11 +54,17 @@ def add_booking(resource_id, username, start, finish):
     )
 
 
-def add_user(username, screen_name, email):
+def add_user(username, screen_name):
     response = users_table.put_item(
         Item = {
             'username': username,
-            'screen_name': screen_name,
-            'email': email
+            'screen_name': screen_name
         }
     )
+
+  
+def list_resources(type):
+    response = resources_table.query(
+        KeyConditionExpression = Key('id').gte(0) & Key('type').eq(type)
+    )
+    return response['Items']
