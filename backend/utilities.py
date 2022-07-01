@@ -65,6 +65,6 @@ def add_user(username, screen_name):
   
 def list_resources(type):
     response = resources_table.query(
-        KeyConditionExpression = Key('id').gte(0) & Key('type').eq(type)
+        KeyConditionExpression = Key('type').eq(type)
     )
     return response['Items']
