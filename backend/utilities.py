@@ -1,10 +1,15 @@
 import json
 from datetime import datetime, timedelta
 from calendar import day_name
+from typing import Dict, List
 from xmlrpc.client import DateTime
 
 
-def available_intervals(bookings, start=None, finish=None):
+def response_to_dict(json_response):
+    pass
+
+
+def available_intervals(bookings, start=None, finish=None) -> List[Dict]:
     '''
     >>> booking_1 = {"start": datetime(2022,7,20,10,0,0), "finish": datetime(2022,7,20,11,0,0)}
     >>> booking_2 = {"start": datetime(2022,7,20,12,0,0), "finish": datetime(2022,7,20,14,0,0)}
@@ -45,7 +50,7 @@ def available_intervals(bookings, start=None, finish=None):
     return available_intervals
 
 
-def round_up_hour(dt):
+def round_up_hour(dt) -> datetime:
     rounded_datetime = datetime(dt.year, dt.month, dt.day, dt.hour)
     if rounded_datetime != dt:
         rounded_datetime = datetime(dt.year, dt.month, dt.day, dt.hour+1)
@@ -53,23 +58,23 @@ def round_up_hour(dt):
     return rounded_datetime
 
 
-def round_down_hour(dt):
+def round_down_hour(dt) -> datetime:
     return datetime(dt.year, dt.month, dt.day, dt.hour)
 
 
-def interval_slots(start, finish, hours=1):
+def interval_slot_starts(start, finish, hours=1) -> List[datetime]:
     '''
     >>> start = datetime(2022,7,20,9,30,0)
     >>> finish = datetime(2022,7,20,22,10,0)
     >>> start_2 = datetime(2022,7,20,12)
     >>> finish_2 = datetime(2022,7,20,16)
-    >>> len(interval_slots(start, finish, 1))
+    >>> len(interval_slot_starts(start, finish, 1))
     12
-    >>> len(interval_slots(start, finish, 4))
+    >>> len(interval_slot_starts(start, finish, 4))
     9
-    >>> len(interval_slots(start, finish, 1.5))
+    >>> len(interval_slot_starts(start, finish, 1.5))
     11
-    >>> len(interval_slots(start_2, finish_2, 4))
+    >>> len(interval_slot_starts(start_2, finish_2, 4))
     1
     '''
     first_slot_start = round_up_hour(start)
@@ -86,33 +91,33 @@ def interval_slots(start, finish, hours=1):
     return slots
 
 
-def available_slots(available_intervals, hours=1):
+def all_slot_starts(available_intervals, hours=1) -> List[datetime]:
     '''
     >>> available_interval_1 = {"start": datetime(2022,7,20,9,0,0), "finish": datetime(2022,7,20,10,0,0)}
     >>> available_interval_2 = {"start": datetime(2022,7,20,12,0,0), "finish": datetime(2022,7,20,16,0,0)}
     >>> available_interval_3 = {"start": datetime(2022,7,20,17,0,0), "finish": datetime(2022,7,20,22,0,0)}
     >>> my_intervals = [available_interval_1, available_interval_2, available_interval_3]
-    >>> available_slots(my_intervals, 4)
+    >>> all_slot_starts(my_intervals, 4)
     [datetime.datetime(2022, 7, 20, 12, 0), datetime.datetime(2022, 7, 20, 17, 0), datetime.datetime(2022, 7, 20, 18, 0)]
     '''
-    available_slots = []
+    all_slot_starts = []
 
     for interval in available_intervals:
-        available_slots += interval_slots(interval['start'], interval['finish'], hours)
+        all_slot_starts += interval_slot_starts(interval['start'], interval['finish'], hours)
 
-    return available_slots
+    return all_slot_starts
 
 
-def format_date(slot):
+def format_date(slot) -> str:
     day = day_name[slot.weekday()]
     return f'{day} {slot.day:02d}-{slot.month:02d}'
 
 
-def format_time(slot):
+def format_time(slot) -> str:
     return str(slot.time())[0:5] #{:d}:{:02d}".format(tdate.hour, tdate.minute)
 
 
-def map_slots(slots):
+def map_slots(slots) -> Dict[str, List[str]]:
     '''
     >>> slots = [datetime(2022, 7, 20, 12, 0), datetime(2022, 7, 20, 17, 0), datetime(2022, 7, 20, 18, 0)]
     >>> map_slots(slots)
