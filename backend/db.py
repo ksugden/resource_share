@@ -8,10 +8,6 @@ RESOURCES_TABLE = 'Resources' # PK = id
 BOOKINGS_TABLE = 'Bookings' # PK = resource_id and start
 
 
-TIMESLOT_HOUR_GRANULARITY = 1
-ADVANCE_BOOK_WEEKS_LIMIT = 1
-
-
 dynamodb = boto3.resource('dynamodb', region_name="eu-west-1")
 
 
