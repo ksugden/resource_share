@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from calendar import day_name
 from xmlrpc.client import DateTime
 
 
@@ -102,15 +103,23 @@ def available_slots(available_intervals, hours=1):
     return available_slots
 
 
+def format_date(slot):
+    day = day_name[slot.weekday()]
+    return f'{day} {slot.day:02d}-{slot.month:02d}'
+
+
+def format_time(slot):
+    return str(slot.time())[0:5] #{:d}:{:02d}".format(tdate.hour, tdate.minute)
+
+
 def map_slots(slots):
-    pass
     '''
-    >>> slots = [datetime.datetime(2022, 7, 20, 12, 0), datetime.datetime(2022, 7, 20, 17, 0), datetime.datetime(2022, 7, 20, 18, 0)]
+    >>> slots = [datetime(2022, 7, 20, 12, 0), datetime(2022, 7, 20, 17, 0), datetime(2022, 7, 20, 18, 0)]
     >>> map_slots(slots)
-    {'20-07-2022':['12:00','17:00','18:00']}
+    {'Wednesday 20-07': ['12:00', '17:00', '18:00']}
     '''
     mapped_slots = {}
     for slot in slots:
-        mapped_slots[f'{slot.day}-{slot.month}-{slot.year}'].append(f'{slot.hour}:{slot.minute}')
+        mapped_slots.setdefault(format_date(slot),[]).append(format_time(slot))
     
     return mapped_slots
