@@ -3,7 +3,7 @@
 }
 
 .App-logo {
-  height: 10vmin;
+  height: 6vmin;
   pointer-events: none;
 }
 
@@ -14,55 +14,32 @@
 }
 
 .App-header {
-  background-color: rgb(255, 255, 255);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: rgb(255, 0, 0);
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-header {
-  font-family: var(--mt-font-heading);
-  font-size: calc(10px + 2vmin);
+  font-size: calc(10px + 1vmin);
+  margin-left: 30px;
   color:rgb(255, 0, 0);
-  opacity: .9;
-  justify-content: center;
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  padding-top: var(--s2);
-}
-
-.App-selector {
-  font-family: var(--mt-font-heading);
-  font-size: calc(2vmin);
-  color:black;
-  opacity: .9;
   justify-content: left;
   display: flex;
-  align-items: left;
+  align-items: center;
   gap: 40px;
-  padding-top: var(--s2);
+  padding-top: var(5px);
 }
+
 
 .Selector-container {
-  background-color: rgb(255, 255, 255);
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: rgb(255, 0, 0);
 }
 
+
+.App-selector {
+  font-size: 18px;
+  color:black;
+  padding: 2%;
+  display: flex;
+  justify-content: left;
+  align-items: left;
+  gap: 40px;
+}
 
 
 @keyframes App-logo-spin {

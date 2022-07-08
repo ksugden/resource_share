@@ -28,10 +28,10 @@ export default function App() {
   
 
   const timeslotsDummy = {
-    '20-07-2022': ['10:00','11:00','16:00'],
-    '21-07-2022': ['09:00','10:00','11:00','15:00','16:00','17:00'],
-    '22-07-2022': ['09:00','12:00','16:00','15:00','16:00','17:00'],
-    '23-07-2022': ['12:00','13:00','14:00']
+    'Wednesday 20-07': ['10:00','11:00','16:00'],
+    'Thursday 21-07': ['09:00','10:00','11:00','15:00','16:00','17:00'],
+    'Friday 22-07': ['09:00','12:00','16:00','15:00','16:00','17:00'],
+    'Saturday 23-07': ['12:00','13:00','14:00']
   };
 
   
@@ -48,15 +48,15 @@ export default function App() {
     
   return (
     <div className="App">
-      <header>
+      <header className="App-header">
         <img src={resourceShareLogo} className="App-logo" alt="logo" />
         <h1>Share Hub</h1>
       </header>
       <body>
+        <article className="Book-element">
         <h2>Book {resourceDummyName}</h2>
 
         <div style={{ margin: "5% 10%" }}>
-            <Stack spacing={5}>
               
             <TimeslotSelector options={timeslotsDummy} />
 
@@ -65,8 +65,8 @@ export default function App() {
                 Request booking
               </button>
             </form>
-            </Stack>
         </div>
+          </article>
       </body>
     </div>
   );
@@ -98,26 +98,26 @@ class TimeslotSelector extends React.Component {
   
   render() {
     const renderOption = item => <option value={item}>{item}</option>
-
     const firstLevelOptions = Object.keys(this.props.options).map(renderOption)
     const secondLevelOptions = this.props.options[this.state.firstLevel].map(renderOption)
     
     return (
-      <div>
+      <Stack className="Selector-container">
         
-        <div className="App-selector">
-          Select an available day:
-          <select onChange={this.handleFirstLevelChange} value={this.state.firstLevel}>
-           {firstLevelOptions}
-          </select>
+          <div className="App-selector">
+              Select an available day:
+              <select onChange={this.handleFirstLevelChange} value={this.state.firstLevel}>
+                   {firstLevelOptions}
+              </select>
+          </div>
 
+          <div className="App-selector">
           Select your 1 hour timeslot:
           <select onChange={this.handleSecondLevelChange} value={this.state.secondLevel}>
             {secondLevelOptions}
           </select>
         </div>
-
-      </div>
+      </Stack>
     )
   }
 }
