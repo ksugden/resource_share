@@ -9,6 +9,7 @@ import TimePicker from '@mui/lab/TimePicker';
 import DateTimePicker from '@mui/lab/DateTimePicker';
 import DesktopDatePicker from '@mui/lab/DesktopDatePicker';
 import MobileDatePicker from '@mui/lab/MobileDatePicker';
+import { daysToWeeks } from 'date-fns';
 
 
 const resource_id = 1; // comes from previous page
@@ -58,11 +59,12 @@ export default function App() {
 
         <div style={{ margin: "5% 10%" }}>
               
-            <TimeslotSelector options={timeslotsDummy} />
-
             <form onSubmit={handleSubmit}>
+            <TimeslotSelector options={timeslotsDummy} />
               <button>
-                Request booking
+                <p>
+                Book now
+                </p>
               </button>
             </form>
         </div>
@@ -105,15 +107,13 @@ class TimeslotSelector extends React.Component {
       <Stack className="Selector-container">
         
           <div className="App-selector">
-              Select an available day:
-              <select onChange={this.handleFirstLevelChange} value={this.state.firstLevel}>
+              <select class="slot-selector" onChange={this.handleFirstLevelChange} value={this.state.firstLevel}>
                    {firstLevelOptions}
               </select>
           </div>
 
           <div className="App-selector">
-          Select your 1 hour timeslot:
-          <select onChange={this.handleSecondLevelChange} value={this.state.secondLevel}>
+          <select class="slot-selector" onChange={this.handleSecondLevelChange} value={this.state.secondLevel}>
             {secondLevelOptions}
           </select>
         </div>
@@ -121,9 +121,3 @@ class TimeslotSelector extends React.Component {
     )
   }
 }
-
-
-// ReactDOM.render(
-//   <TimeslotSelector options={timeslotsDummy} />,
-//   document.getElementById('app')
-// )

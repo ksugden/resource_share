@@ -2,10 +2,22 @@
   text-align: center;
 }
 
+
 .App-logo {
   height: 6vmin;
   pointer-events: none;
 }
+
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
@@ -13,15 +25,29 @@
   }
 }
 
+
 .App-header {
   font-size: calc(10px + 1vmin);
   margin-left: 30px;
   color:rgb(255, 0, 0);
-  justify-content: left;
+  justify-content: center;
   display: flex;
   align-items: center;
   gap: 40px;
   padding-top: var(5px);
+}
+
+
+.slot-selector {
+  min-width: 150px;
+  padding: 13px 0px;
+  text-align: center;
+}
+
+
+button, .button, .slot-selector {
+  border-radius: 10px;
+  font-size:small;
 }
 
 
@@ -34,19 +60,9 @@
 .App-selector {
   font-size: 18px;
   color:black;
-  padding: 2%;
+  padding: 0 2% 2% 2%;
   display: flex;
-  justify-content: left;
+  justify-content: center;
   align-items: left;
   gap: 40px;
-}
-
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
