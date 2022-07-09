@@ -13,7 +13,7 @@ import { daysToWeeks } from 'date-fns';
 
 
 const resource_id = 1; // comes from previous page
-const list_bookings_url = "https://5eo5juhaf6.execute-api.eu-west-1.amazonaws.com/initial/list_bookings?id="+resource_id;
+const list_bookings_url = "https://5eo5juhaf6.execute-api.eu-west-1.amazonaws.com/initial/list_bookings?id=" + resource_id;
 
 
 export default function App() {
@@ -26,27 +26,27 @@ export default function App() {
   };
 
   const handleSubmit = 1;
-  
+
 
   const timeslotsDummy = {
-    'Wednesday 20-07': ['10:00','11:00','16:00'],
-    'Thursday 21-07': ['09:00','10:00','11:00','15:00','16:00','17:00'],
-    'Friday 22-07': ['09:00','12:00','16:00','15:00','16:00','17:00'],
-    'Saturday 23-07': ['12:00','13:00','14:00']
+    'Wednesday 20-07': ['10:00', '11:00', '16:00'],
+    'Thursday 21-07': ['09:00', '10:00', '11:00', '15:00', '16:00', '17:00'],
+    'Friday 22-07': ['09:00', '12:00', '16:00', '15:00', '16:00', '17:00'],
+    'Saturday 23-07': ['12:00', '13:00', '14:00']
   };
 
-  
-  
-  React.useEffect(() => { 
+
+
+  React.useEffect(() => {
     fetch(list_bookings_url).then(
       response => response.json()
-      ).then(
-        data => console.log("data is : ", data)
+    ).then(
+      data => console.log("data is : ", data)
     );
   })
 
   const resourceDummyName = 'Dobbin'
-    
+
   return (
     <div className="App">
       <header className="App-header">
@@ -55,64 +55,61 @@ export default function App() {
       </header>
       <body>
         <article className="Book-element">
-        <h2>Book {resourceDummyName}</h2>
+          <h2>Book {resourceDummyName}</h2>
 
-        <div style={{ margin: "5% 10%" }}>
-              
-            <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <TimeslotSelector options={timeslotsDummy} />
-              <button>
-                <p>
+            <button>
+              <p>
                 Book now
-                </p>
-              </button>
-            </form>
-        </div>
-          </article>
+              </p>
+            </button>
+          </form>
+        </article>
       </body>
     </div>
   );
 }
 
 
- 
+
 class TimeslotSelector extends React.Component {
   constructor(props) {
     super(props)
-    
+
     this.handleFirstLevelChange = this.handleFirstLevelChange.bind(this)
     this.handleSecondLevelChange = this.handleSecondLevelChange.bind(this)
-    
+
     // Prepopulate with the first item for each level
     this.state = {
       firstLevel: Object.keys(props.options)[0],
       secondLevel: Object.keys(props.options)[0][0]
     }
   }
-  
+
   handleFirstLevelChange(event) {
-    this.setState({firstLevel: event.target.value});
+    this.setState({ firstLevel: event.target.value });
   }
-  
+
   handleSecondLevelChange(event) {
-    this.setState({secondLevel: event.target.value});
+    this.setState({ secondLevel: event.target.value });
   }
-  
+
   render() {
     const renderOption = item => <option value={item}>{item}</option>
     const firstLevelOptions = Object.keys(this.props.options).map(renderOption)
     const secondLevelOptions = this.props.options[this.state.firstLevel].map(renderOption)
-    
+
     return (
       <Stack className="Selector-container">
-        
-          <div className="App-selector">
-              <select class="slot-selector" onChange={this.handleFirstLevelChange} value={this.state.firstLevel}>
-                   {firstLevelOptions}
-              </select>
-          </div>
 
-          <div className="App-selector">
+        <div className="App-selector">
+          <select class="slot-selector" onChange={this.handleFirstLevelChange} value={this.state.firstLevel}>
+            {firstLevelOptions}
+          </select>
+        </div>
+
+        <div className="App-selector">
           <select class="slot-selector" onChange={this.handleSecondLevelChange} value={this.state.secondLevel}>
             {secondLevelOptions}
           </select>
