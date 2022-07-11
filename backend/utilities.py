@@ -3,9 +3,22 @@ from datetime import datetime, timedelta
 from calendar import day_name
 from typing import Dict, List
 from dateutil import parser
+import config
 
 
 def parse_bookings_response(bookings_response: List[Dict[str,str]]) -> List[Dict[str, datetime]]:
+    '''
+    >>> test_json = [{"username": "benmp", "finish": "2022-07-31 12:00:00.000000", 
+    ... "resource_id": "1", "start": "2022-07-31 10:00:00.000000"}, 
+    ... {"username": "ksugden", "finish": "2022-08-04", 
+    ... "resource_id": "1", "start": "2022-08-03"},
+    ... {"username": "ksugden", "finish": "2022-08-07 11:00:00.000000",
+    ... "resource_id": "1", "start": "2022-08-07 10:00:00.000000"},
+    ... {"username": "benmp", "finish": "2022-08-07 12:00:00.000000",
+    ... "resource_id": "1", "start": "2022-08-07 11:00:00.000000"}]
+    >>> parse_bookings_response(test_json)
+    [{'start': datetime.datetime(2022, 7, 31, 10, 0), 'finish': datetime.datetime(2022, 7, 31, 12, 0)}, {'start': datetime.datetime(2022, 8, 3, 0, 0), 'finish': datetime.datetime(2022, 8, 4, 0, 0)}, {'start': datetime.datetime(2022, 8, 7, 10, 0), 'finish': datetime.datetime(2022, 8, 7, 11, 0)}, {'start': datetime.datetime(2022, 8, 7, 11, 0), 'finish': datetime.datetime(2022, 8, 7, 12, 0)}]
+    '''
     return [{'start': parser.parse(b['start']), 'finish': parser.parse(b['finish'])} for b in bookings_response]
 
 
@@ -24,18 +37,21 @@ def available_intervals(bookings, start=None, finish=None) -> List[Dict[str, dat
     [{'start': datetime.datetime(2022, 7, 20, 19, 0), 'finish': datetime.datetime(2022, 7, 20, 22, 0)}]
     '''    
     start = start or datetime.now()
-    finish = finish or (start + timedelta(days=1))
+    finish = finish or (start + timedelta(days=config.ADVANCE_BOOK_DAYS_LIMIT))
 
     relevant_bookings = [
         booking for booking in bookings
         if booking["finish"] > start
         and booking["start"] < finish
     ]
+
+    if len(relevant_bookings)==0:
+        return
     
     available_intervals = []
 
     if start < relevant_bookings[0]['start']:
-      available_intervals = [{'start': start, 'finish': relevant_bookings[0]['start']}]
+        available_intervals = [{'start': start, 'finish': relevant_bookings[0]['start']}]
 
     for index, booking in enumerate(relevant_bookings):
         try:
@@ -100,6 +116,9 @@ def all_slot_starts(available_intervals, hours=1) -> List[datetime]:
     >>> all_slot_starts(my_intervals, 4)
     [datetime.datetime(2022, 7, 20, 12, 0), datetime.datetime(2022, 7, 20, 17, 0), datetime.datetime(2022, 7, 20, 18, 0)]
     '''
+    if not available_intervals:
+        return
+
     starts = []
 
     for interval in available_intervals:
@@ -123,6 +142,8 @@ def map_slot_starts(slot_starts) -> Dict[str, List[str]]:
     >>> map_slot_starts(slot_starts)
     {'Wednesday 20-07': ['12:00', '17:00', '18:00']}
     '''
+    if not slot_starts:
+        return
     mapped_slot_starts = {}
     for start in slot_starts:
         mapped_slot_starts.setdefault(format_date(start),[]).append(format_time(start))
@@ -130,8 +151,22 @@ def map_slot_starts(slot_starts) -> Dict[str, List[str]]:
     return mapped_slot_starts
 
 
-def get_slot_starts(bookings_response) -> Dict[str, List[str]]:
+def get_slot_starts(bookings_response, duration, start, finish) -> Dict[str, List[str]]:
+    '''
+    >>> test_json = [{"username": "benmp", "finish": "2022-07-31 12:00:00.000000", 
+    ... "resource_id": "1", "start": "2022-07-31 10:00:00.000000"}, 
+    ... {"username": "ksugden", "finish": "2022-08-04 18:00", 
+    ... "resource_id": "1", "start": "2022-08-04 11:00"},
+    ... {"username": "ksugden", "finish": "2022-08-07 11:00:00.000000",
+    ... "resource_id": "1", "start": "2022-08-07 10:00:00.000000"},
+    ... {"username": "benmp", "finish": "2022-08-07 12:00:00.000000",
+    ... "resource_id": "1", "start": "2022-08-07 11:00:00.000000"}]
+    >>> get_slot_starts(test_json, 2, datetime(2022,7,31,8), datetime(2022,8,1))
+    {'Sunday 31-07': ['08:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']}
+    >>> get_slot_starts(test_json, 1, datetime(2022,7,11,8), datetime(2022,7,12))
+    '''
+#    import pdb; pdb.set_trace()
     bookings = parse_bookings_response(bookings_response)
-    intervals = available_intervals(bookings)
-    starts = all_slot_starts(intervals)
+    intervals = available_intervals(bookings, start, finish)
+    starts = all_slot_starts(intervals,duration)
     return map_slot_starts(starts)
