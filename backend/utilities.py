@@ -67,9 +67,15 @@ def available_intervals(bookings, start=None, finish=None) -> List[Dict[str, dat
 
 
 def round_up_hour(dt) -> datetime:
+    '''
+    >>> dt = datetime(2022,7, 20,23,40)
+    >>> round_up_hour(dt)
+    datetime.datetime(2022, 7, 21, 0, 0)
+    '''
     rounded_datetime = datetime(dt.year, dt.month, dt.day, dt.hour)
     if rounded_datetime != dt:
-        rounded_datetime = datetime(dt.year, dt.month, dt.day, dt.hour+1)
+        dt = dt + timedelta(hours=1)
+        rounded_datetime = datetime(dt.year, dt.month, dt.day, dt.hour)
     
     return rounded_datetime
 
@@ -84,6 +90,8 @@ def interval_slot_starts(start, finish, hours=1) -> List[datetime]:
     >>> finish = datetime(2022,7,20,22,10,0)
     >>> start_2 = datetime(2022,7,20,12)
     >>> finish_2 = datetime(2022,7,20,16)
+    >>> start_3 = datetime(2022,7,20,20)
+    >>> finish_3 = datetime(2022,7,21,22)
     >>> len(interval_slot_starts(start, finish, 1))
     12
     >>> len(interval_slot_starts(start, finish, 4))
@@ -92,6 +100,8 @@ def interval_slot_starts(start, finish, hours=1) -> List[datetime]:
     11
     >>> len(interval_slot_starts(start_2, finish_2, 4))
     1
+    >>> len(interval_slot_starts(start_3, finish_3, 2))
+    25
     '''
     first_slot_start = round_up_hour(start)
     last_slot_start = round_down_hour(round_down_hour(finish) - timedelta(hours=hours))
@@ -101,7 +111,8 @@ def interval_slot_starts(start, finish, hours=1) -> List[datetime]:
     elif last_slot_start < first_slot_start:
         slots = []
     else:
-        number_of_slots = last_slot_start.hour - first_slot_start.hour + 1 #todo need to handle if finish goes over to next day
+        delta = last_slot_start - first_slot_start + timedelta(hours=1)
+        number_of_slots = int(delta / timedelta(hours=1))
         slots = [first_slot_start + timedelta(hours=x) for x in range(0,number_of_slots)]
     
     return slots
@@ -164,8 +175,9 @@ def get_slot_starts(bookings_response, duration, start, finish) -> Dict[str, Lis
     >>> get_slot_starts(test_json, 2, datetime(2022,7,31,8), datetime(2022,8,1))
     {'Sunday 31-07': ['08:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']}
     >>> get_slot_starts(test_json, 1, datetime(2022,7,11,8), datetime(2022,7,12))
+    >>> get_slot_starts(test_json, 6, datetime(2022,7,30,8), datetime(2022,8,1,10))
+    {'Saturday 30-07': ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'], 'Sunday 31-07': ['00:00', '01:00', '02:00', '03:00', '04:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'], 'Monday 01-08': ['00:00', '01:00', '02:00', '03:00', '04:00']}
     '''
-#    import pdb; pdb.set_trace()
     bookings = parse_bookings_response(bookings_response)
     intervals = available_intervals(bookings, start, finish)
     starts = all_slot_starts(intervals,duration)
