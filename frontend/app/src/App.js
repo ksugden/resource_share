@@ -12,6 +12,7 @@ import MobileDatePicker from '@mui/lab/MobileDatePicker';
 import { daysToWeeks } from 'date-fns';
 
 
+const userDummyName = 'User A'; // comes from previous page
 const resource_id = 1; // comes from previous page
 const hours = 1; // could come from earlier drop-down
 const resourceDummyName = 'Dobbin' // comes from lookup on Resources table
@@ -22,20 +23,48 @@ const timeslotsDummy = {
   'Saturday 23-07': ['12:00', '13:00', '14:00']
 };
 
+//const api_url = "https://5eo5juhaf6.execute-api.eu-west-1.amazonaws.com/v1/";
+//const list_bookings_url = api_url + "list_bookings?id=" + resource_id + "&hours=" + hours;
+//const make_booking_url = api_url + "add_booking";
 
 const list_bookings_url = "https://5eo5juhaf6.execute-api.eu-west-1.amazonaws.com/v1/list_bookings?id=" + resource_id + "&hours=" + hours;
-
 
 export default function App() {
   const [value, setValue] = useState(Date.now());
   const [finish_value, setFinishValue] = useState(value);
+//  const [message, setMessage] = useState("");
 
   const handleChange = (newValue, newFinishValue) => {
     setValue(newValue);
     setFinishValue(newFinishValue)
   };
 
+  // let 
   const handleSubmit = 1;
+  // async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     let res = await fetch(make_booking_url, {
+  //       method: "POST",
+  //       body: JSON.stringify({
+  //         username: userDummyName,
+  //         resource_id: resource_id,
+  //         start: value,
+  //         finish: finishValue
+  //       }),
+  //     });
+  //     let resJson = await res.json();
+  //     if (res.status === 200) {
+  //       setValue("");
+  //       setFinishValue("");
+  //       setMessage("Booked "+resourceDummyName+" for "+hours+": "+value+" until "+finishValue);
+  //     } else {
+  //       setMessage("An error occured");
+  //     }
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
 
   const [availableSlots, setAvailableSlots] = useState({});
 
