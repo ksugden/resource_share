@@ -13,7 +13,16 @@ import { daysToWeeks } from 'date-fns';
 
 
 const resource_id = 1; // comes from previous page
-const hours = 1;
+const hours = 1; // could come from earlier drop-down
+const resourceDummyName = 'Dobbin' // comes from lookup on Resources table
+const timeslotsDummy = {
+  'Wednesday 20-07': ['10:00', '11:00', '16:00'],
+  'Thursday 21-07': ['09:00', '10:00', '11:00', '15:00', '16:00', '17:00'],
+  'Friday 22-07': ['09:00', '12:00', '16:00', '15:00', '16:00', '17:00'],
+  'Saturday 23-07': ['12:00', '13:00', '14:00']
+};
+
+
 const list_bookings_url = "https://5eo5juhaf6.execute-api.eu-west-1.amazonaws.com/v1/list_bookings?id=" + resource_id + "&hours=" + hours;
 
 
@@ -28,16 +37,7 @@ export default function App() {
 
   const handleSubmit = 1;
 
-
-  const timeslotsDummy = {
-    'Wednesday 20-07': ['10:00', '11:00', '16:00'],
-    'Thursday 21-07': ['09:00', '10:00', '11:00', '15:00', '16:00', '17:00'],
-    'Friday 22-07': ['09:00', '12:00', '16:00', '15:00', '16:00', '17:00'],
-    'Saturday 23-07': ['12:00', '13:00', '14:00']
-  };
-
-
-  const [availableSlots, setAvailableSlots] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState({});
 
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function App() {
     );
   })
 
-  const resourceDummyName = 'Dobbin'
+ 
 
   return (
     <div className="App">
@@ -63,7 +63,7 @@ export default function App() {
         <article className="Book-element">
           <h2>Book {resourceDummyName}</h2>
           <form onSubmit={handleSubmit}>
-            <TimeslotSelector options={timeslotsDummy}
+            <TimeslotSelector options={availableSlots}
               // {availableSlots} 
               />
             <button>
