@@ -1,6 +1,6 @@
 import resourceShareLogo from './resourceShareLogo.png';
 import './App.css';
-import * as React from 'react';
+import React, { useState, useEffect}  from 'react';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
@@ -13,12 +13,13 @@ import { daysToWeeks } from 'date-fns';
 
 
 const resource_id = 1; // comes from previous page
-const list_bookings_url = "https://5eo5juhaf6.execute-api.eu-west-1.amazonaws.com/initial/list_bookings?id=" + resource_id;
+const hours = 1;
+const list_bookings_url = "https://5eo5juhaf6.execute-api.eu-west-1.amazonaws.com/v1/list_bookings?id=" + resource_id + "&hours=" + hours;
 
 
 export default function App() {
-  const [value, setValue] = React.useState(Date.now());
-  const [finish_value, setFinishValue] = React.useState(value);
+  const [value, setValue] = useState(Date.now());
+  const [finish_value, setFinishValue] = useState(value);
 
   const handleChange = (newValue, newFinishValue) => {
     setValue(newValue);
@@ -36,12 +37,17 @@ export default function App() {
   };
 
 
+  const [availableSlots, setAvailableSlots] = useState([]);
 
-  React.useEffect(() => {
+
+  useEffect(() => {
     fetch(list_bookings_url).then(
       response => response.json()
     ).then(
-      data => console.log("data is : ", data)
+      data => {
+        console.log("data is : ", data);
+        setAvailableSlots(data);
+      }
     );
   })
 
@@ -56,9 +62,10 @@ export default function App() {
       <body>
         <article className="Book-element">
           <h2>Book {resourceDummyName}</h2>
-
           <form onSubmit={handleSubmit}>
-            <TimeslotSelector options={timeslotsDummy} />
+            <TimeslotSelector options={timeslotsDummy}
+              // {availableSlots} 
+              />
             <button>
               <p>
                 Book now
