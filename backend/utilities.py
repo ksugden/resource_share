@@ -139,8 +139,7 @@ def all_slot_starts(available_intervals, hours=1) -> List[datetime]:
 
 
 def format_date(slot_start) -> str:
-    day = day_name[slot_start.weekday()]
-    return f'{day} {slot_start.day:02d}-{slot_start.month:02d}'
+    return slot_start.date().isoformat()
 
 
 def format_time(slot_start) -> str:
@@ -151,7 +150,7 @@ def map_slot_starts(slot_starts) -> Dict[str, List[str]]:
     '''
     >>> slot_starts = [datetime(2022, 7, 20, 12, 0), datetime(2022, 7, 20, 17, 0), datetime(2022, 7, 20, 18, 0)]
     >>> map_slot_starts(slot_starts)
-    {'Wednesday 20-07': ['12:00', '17:00', '18:00']}
+    {'2022-07-20': ['12:00', '17:00', '18:00']}
     '''
     if not slot_starts:
         return
@@ -173,10 +172,10 @@ def get_slot_starts(bookings_response, duration, start, finish) -> Dict[str, Lis
     ... {"username": "benmp", "finish": "2022-08-07 12:00:00.000000",
     ... "resource_id": "1", "start": "2022-08-07 11:00:00.000000"}]
     >>> get_slot_starts(test_json, 2, datetime(2022,7,31,8), datetime(2022,8,1))
-    {'Sunday 31-07': ['08:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']}
+    {'2022-07-31': ['08:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']}
     >>> get_slot_starts(test_json, 1, datetime(2022,7,11,8), datetime(2022,7,12))
     >>> get_slot_starts(test_json, 6, datetime(2022,7,30,8), datetime(2022,8,1,10))
-    {'Saturday 30-07': ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'], 'Sunday 31-07': ['00:00', '01:00', '02:00', '03:00', '04:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'], 'Monday 01-08': ['00:00', '01:00', '02:00', '03:00', '04:00']}
+    {'2022-07-30': ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'], '2022-07-31': ['00:00', '01:00', '02:00', '03:00', '04:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'], '2022-08-01': ['00:00', '01:00', '02:00', '03:00', '04:00']}
     '''
     bookings = parse_bookings_response(bookings_response)
     intervals = available_intervals(bookings, start, finish)
