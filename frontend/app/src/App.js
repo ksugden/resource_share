@@ -43,7 +43,7 @@ export default function App() {
 
 
   function calcFinish(start, hours) {
-    setFinish(new Date(start.getTime() + hours*1000).toISOString())
+    return new Date(start.getTime() + hours*1000);
   }
 
 
@@ -56,11 +56,13 @@ export default function App() {
   let handleSubmit = async (e) => {
     e.preventDefault();
     console.log('start date from TimeSelector:'+startDate);
+    const startDatetime = dateTime(startDate, startTime);
+    const finishDatetime = calcFinish(startDatetime, hours);
     const post_str = JSON.stringify({
       username: userDummyName,
       resource_id: resource_id.toString(),
-      start: dateTime(startDate, startTime).toISOString(),
-      finish: ''
+      start: startDatetime.toISOString(),
+      finish: finishDatetime.toISOString()
     });
     try {
       console.log('Trying to post:', post_str)
