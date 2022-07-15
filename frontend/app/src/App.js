@@ -67,7 +67,6 @@ export default function App() {
     try {
       console.log('Trying to post:', post_str)
       let res = await fetch(make_booking_url, {
-        headers: { "Access-Control-Allow-Origin": "*" } , // do I need this?
         method: "POST",
         body: post_str,
       });
