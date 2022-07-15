@@ -16,6 +16,8 @@ const timeslotsDummy = {
   'Saturday 23-07': ['12:00', '13:00', '14:00']
 };
 
+const allowed_durations = [1, 2, 3, 4];
+const miliseconds_per_hour = 60 * 60 * 1000;
 
 //URLS
 const api_url = "https://5eo5juhaf6.execute-api.eu-west-1.amazonaws.com/v1/";
@@ -27,9 +29,14 @@ export default function App() {
   const [availableSlots, setAvailableSlots] = useState({});  
   const [startDate, setStartDate] = useState("");
   const [startTime, setStartTime] = useState("");
+  const [duration, setDuration] = useState("");
   const [finish, setFinish] = useState("");
   const [message, setMessage] = useState("");
 
+  
+  const sendDurationToParent = (hours) => {    
+    setDuration(hours);
+  }
   
   const sendTimeToParent = (time) => {    
     setStartTime(time);
@@ -43,7 +50,7 @@ export default function App() {
 
 
   function calcFinish(start, hours) {
-    return new Date(start.getTime() + hours*1000);
+    return new Date(start.getTime() + hours*miliseconds_per_hour);
   }
 
 
@@ -57,7 +64,7 @@ export default function App() {
     e.preventDefault();
     console.log('start date from TimeSelector:'+startDate);
     const startDatetime = dateTime(startDate, startTime);
-    const finishDatetime = calcFinish(startDatetime, hours);
+    const finishDatetime = calcFinish(startDatetime, duration);
     const post_str = JSON.stringify({
       username: userDummyName,
       resource_id: resource_id.toString(),
@@ -75,7 +82,6 @@ export default function App() {
         setMessage("Booked "+resourceDummyName+" for "+hours);
         setStartDate("");
         setStartTime("");
-        // +"); : "+this.state.start+" until ...")//;+this.state.finish);
       } else {
         setMessage("An error occured");
       }
@@ -96,7 +102,7 @@ export default function App() {
         <article className="Book-element">
           <h2>Book {resourceDummyName}</h2>
           <form onSubmit={handleSubmit}>
-            <TimeslotSelector sendDateToParent={sendDateToParent} sendTimeToParent={sendTimeToParent}/>
+            <TimeslotSelector sendDateToParent={sendDateToParent} sendTimeToParent={sendTimeToParent} sendDurationToParent={sendDurationToParent}/>
               {/* // {timeslotsDummy}  */}
             <button type = "submit">
               <p>
@@ -119,10 +125,13 @@ class TimeslotSelector extends React.Component {
 
     this.sendDateToParent = props.sendDateToParent;
     this.sendTimeToParent = props.sendTimeToParent;
+    this.sendDurationToParent = props.sendDurationToParent;
     this.handleFirstLevelChange = this.handleFirstLevelChange.bind(this);
     this.handleSecondLevelChange = this.handleSecondLevelChange.bind(this);
+    this.handleDurationChange = this.handleDurationChange.bind(this);
 
     this.state = {
+      duration: '',
       availableSlots: {},
       firstLevel: '',
       secondLevel: ''
@@ -140,7 +149,12 @@ class TimeslotSelector extends React.Component {
       );
     }
 
-
+  handleDurationChange(event) {
+    console.log('event value: ' + event.target.value.toString())
+    this.setState({ duration: event.target.value.toString() });
+    this.sendDurationToParent(event.target.value.toString());
+  }
+  
   handleFirstLevelChange(event) {
     this.setState({ firstLevel: event.target.value });
     this.sendDateToParent(event.target.value);
@@ -159,6 +173,12 @@ class TimeslotSelector extends React.Component {
     return (
       <Stack className="Selector-container">
 
+        <div className="App-selector">
+          <select className="slot-selector" onChange={this.handleDurationChange} >
+            {allowed_durations.map(renderOption)}
+          </select>
+        </div>
+        
         <div className="App-selector">
           <select className="slot-selector" onChange={this.handleFirstLevelChange} >
             {firstLevelOptions}
