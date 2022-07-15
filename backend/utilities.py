@@ -1,14 +1,16 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from calendar import day_name
 from typing import Dict, List
 from dateutil import parser
 import config
 
 
+
 def parse_bookings_response(bookings_response: List[Dict[str,str]]) -> List[Dict[str, datetime]]:
     '''
-    >>> test_json = [{"username": "benmp", "finish": "2022-07-31 12:00:00.000000", 
+    >>> test_json = [
+    ... {"username": "benmp", "finish": "2022-07-31 12:00:00.000000", 
     ... "resource_id": "1", "start": "2022-07-31 10:00:00.000000"}, 
     ... {"username": "ksugden", "finish": "2022-08-04", 
     ... "resource_id": "1", "start": "2022-08-03"},
@@ -16,8 +18,13 @@ def parse_bookings_response(bookings_response: List[Dict[str,str]]) -> List[Dict
     ... "resource_id": "1", "start": "2022-08-07 10:00:00.000000"},
     ... {"username": "benmp", "finish": "2022-08-07 12:00:00.000000",
     ... "resource_id": "1", "start": "2022-08-07 11:00:00.000000"}]
+    >>> test_tzjson = [
+    ... {"username": "benmp", "finish": "2022-07-31T12:00:00.000Z", 
+    ... "resource_id": "1", "start": "2022-07-31T10:00:00.000Z"}]
     >>> parse_bookings_response(test_json)
     [{'start': datetime.datetime(2022, 7, 31, 10, 0), 'finish': datetime.datetime(2022, 7, 31, 12, 0)}, {'start': datetime.datetime(2022, 8, 3, 0, 0), 'finish': datetime.datetime(2022, 8, 4, 0, 0)}, {'start': datetime.datetime(2022, 8, 7, 10, 0), 'finish': datetime.datetime(2022, 8, 7, 11, 0)}, {'start': datetime.datetime(2022, 8, 7, 11, 0), 'finish': datetime.datetime(2022, 8, 7, 12, 0)}]
+    >>> parse_bookings_response(test_tzjson)
+    [{'start': datetime.datetime(2022, 7, 31, 10, 0, tzinfo=tzutc()), 'finish': datetime.datetime(2022, 7, 31, 12, 0, tzinfo=tzutc())}]
     '''
     return [{'start': parser.parse(b['start']), 'finish': parser.parse(b['finish'])} for b in bookings_response]
 
@@ -29,14 +36,21 @@ def available_intervals(bookings, start=None, finish=None) -> List[Dict[str, dat
     >>> booking_3 = {"start": datetime(2022,7,20,18,0,0), "finish": datetime(2022,7,20,19,0,0)}
     >>> booking_4 = {"start": datetime(2022,7,21,10,0,0), "finish": datetime(2022,7,21,12,0,0)}
     >>> my_bookings = [booking_1, booking_2, booking_3, booking_4]
+    >>> tzbooking_1 = {"start": datetime(2022,7,20,10,0,0,tzinfo=timezone.utc), "finish": datetime(2022,7,20,11,0,0,tzinfo=timezone.utc)}
+    >>> tzbooking_2 = {"start": datetime(2022,7,20,12,0,0, tzinfo=timezone.utc), "finish": datetime(2022,7,20,14,0,0, tzinfo=timezone.utc)}
+    >>> tzbooking_3 = {"start": datetime(2022,7,20,18,0,0, tzinfo=timezone.utc), "finish": datetime(2022,7,20,19,0,0, tzinfo=timezone.utc)}
+    >>> tzbooking_4 = {"start": datetime(2022,7,21,10,0,0, tzinfo=timezone.utc), "finish": datetime(2022,7,21,12,0,0, tzinfo=timezone.utc)}
+    >>> my_tzbookings = [tzbooking_1, tzbooking_2, tzbooking_3, tzbooking_4]
     >>> available_intervals(my_bookings, datetime(2022,7,20,9,0,0), datetime(2022,7,20,17,0,0))
     [{'start': datetime.datetime(2022, 7, 20, 9, 0), 'finish': datetime.datetime(2022, 7, 20, 10, 0)}, {'start': datetime.datetime(2022, 7, 20, 11, 0), 'finish': datetime.datetime(2022, 7, 20, 12, 0)}, {'start': datetime.datetime(2022, 7, 20, 14, 0), 'finish': datetime.datetime(2022, 7, 20, 17, 0)}]
     >>> available_intervals(my_bookings, datetime(2022,7,20,10,30,0), datetime(2022,7,20,15,0,0))
     [{'start': datetime.datetime(2022, 7, 20, 11, 0), 'finish': datetime.datetime(2022, 7, 20, 12, 0)}, {'start': datetime.datetime(2022, 7, 20, 14, 0), 'finish': datetime.datetime(2022, 7, 20, 15, 0)}]
     >>> available_intervals(my_bookings, datetime(2022,7,20,18,0,0), datetime(2022,7,20,22,0,0))
     [{'start': datetime.datetime(2022, 7, 20, 19, 0), 'finish': datetime.datetime(2022, 7, 20, 22, 0)}]
+    >>> available_intervals(my_tzbookings, datetime(2022,7,20,18,0,0, tzinfo=timezone.utc), datetime(2022,7,20,22,0,0, tzinfo=timezone.utc))
+    [{'start': datetime.datetime(2022, 7, 20, 19, 0, tzinfo=datetime.timezone.utc), 'finish': datetime.datetime(2022, 7, 20, 22, 0, tzinfo=datetime.timezone.utc)}]
     '''    
-    start = start or datetime.now()
+    start = start or datetime.now(timezone.utc)
     finish = finish or (start + timedelta(days=config.ADVANCE_BOOK_DAYS_LIMIT))
 
     relevant_bookings = [
@@ -72,16 +86,16 @@ def round_up_hour(dt) -> datetime:
     >>> round_up_hour(dt)
     datetime.datetime(2022, 7, 21, 0, 0)
     '''
-    rounded_datetime = datetime(dt.year, dt.month, dt.day, dt.hour)
+    rounded_datetime = datetime(dt.year, dt.month, dt.day, dt.hour, tzinfo=dt.tzinfo)
     if rounded_datetime != dt:
         dt = dt + timedelta(hours=1)
-        rounded_datetime = datetime(dt.year, dt.month, dt.day, dt.hour)
+        rounded_datetime = datetime(dt.year, dt.month, dt.day, dt.hour, tzinfo=dt.tzinfo)
     
     return rounded_datetime
 
 
 def round_down_hour(dt) -> datetime:
-    return datetime(dt.year, dt.month, dt.day, dt.hour)
+    return datetime(dt.year, dt.month, dt.day, dt.hour, tzinfo=dt.tzinfo)
 
 
 def interval_slot_starts(start, finish, hours=1) -> List[datetime]:
