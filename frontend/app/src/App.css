@@ -4,7 +4,7 @@
 
 
 .App-logo {
-  height: 6vmin;
+  height: 80px;
   pointer-events: none;
 }
 
@@ -65,4 +65,10 @@ button, .button, .slot-selector {
   justify-content: center;
   align-items: left;
   gap: 40px;
+}
+
+.message {
+  font-size: 20px;
+  padding: 3% 15%;
+  color:rgb(225, 134, 195)
 }

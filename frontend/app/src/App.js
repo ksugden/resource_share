@@ -21,7 +21,7 @@ const miliseconds_per_hour = 60 * 60 * 1000;
 
 //URLS
 const api_url = "https://5eo5juhaf6.execute-api.eu-west-1.amazonaws.com/v1/";
-const list_bookings_url = api_url + "list_bookings?id=" + resource_id + "&hours=" + hours;
+const list_bookings_url = api_url + "list_bookings?id=" + resource_id + "&hours=";
 const make_booking_url = api_url + "add_booking";
 
 
@@ -79,7 +79,7 @@ export default function App() {
       });
       let resJson = await res.json();
       if (res.status === 200) {
-        setMessage("Booked "+resourceDummyName+" for "+hours);
+        setMessage("Booked "+resourceDummyName+" for "+duration+' hours ('+startDatetime.toString()+'-'+finishDatetime.toString()+')');
         setStartDate("");
         setStartTime("");
       } else {
@@ -138,19 +138,17 @@ class TimeslotSelector extends React.Component {
     }
   }
 
-   //GET DATA FROM API
-  componentDidMount() {
-      fetch(list_bookings_url).then(
-        response => response.json()
-      ).then(
-        data => {
-          this.setState({availableSlots: data});
-        }
-      );
-    }
+  
 
   handleDurationChange(event) {
     console.log('event value: ' + event.target.value.toString())
+    fetch(list_bookings_url+event.target.value).then(
+      response => response.json()
+    ).then(
+      data => {
+        this.setState({availableSlots: data});
+      }
+    );
     this.setState({ duration: event.target.value.toString() });
     this.sendDurationToParent(event.target.value.toString());
   }
@@ -170,11 +168,12 @@ class TimeslotSelector extends React.Component {
     const firstLevelOptions = Object.keys(this.state.availableSlots).map(renderOption)
     const secondLevelOptions = this.state.firstLevel.length ? this.state.availableSlots[this.state.firstLevel].map(renderOption): []
 
+
     return (
       <Stack className="Selector-container">
 
         <div className="App-selector">
-          <select className="slot-selector" onChange={this.handleDurationChange} >
+          <select id='durationSelector' className="slot-selector" onChange={this.handleDurationChange} >
             {allowed_durations.map(renderOption)}
           </select>
         </div>
