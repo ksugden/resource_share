@@ -1,4 +1,3 @@
-import resourceShareLogo from './resourceShareLogo.png';
 import './App.css';
 import React, { useState, useEffect}  from 'react';
 import Stack from '@mui/material/Stack';
@@ -88,10 +87,6 @@ export default function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={resourceShareLogo} className="App-logo" alt="logo" />
-        <h1>Share Hub</h1>
-      </header>
       <div>
         <article className="Book-element">
           <h2>Book {resourceDummyName}</h2>
