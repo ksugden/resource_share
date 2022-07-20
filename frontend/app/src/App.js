@@ -1,7 +1,32 @@
 import resourceShareLogo from './resourceShareLogo.png';
 import './App.css';
-import React, { useState, useEffect}  from 'react';
+import React, { useState, useEffect } from 'react';
 import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Divider from '@mui/material/Divider';
+import Paper from '@mui/material/Paper';
+
+const theme = createTheme({
+  status: {
+    danger: '#e53e3e',
+  },
+  palette: {
+    primary: {
+      main: '#f50057',
+      darker: '#ab003c'
+      ,
+    },
+    neutral: {
+      main: '#f73378',
+      contrastText: '#fff',
+    },
+  },
+});
 
 
 // Test data
@@ -16,7 +41,7 @@ const timeslotsDummy = {
   'Saturday 23-07': ['12:00', '13:00', '14:00']
 };
 
-const allowed_durations = [1, 2, 3, 4];
+const allowed_durations = ['1 hour', '2 hours', '3 hours', '4 hours'];
 const miliseconds_per_hour = 60 * 60 * 1000;
 
 //URLS
@@ -26,43 +51,43 @@ const make_booking_url = api_url + "add_booking";
 
 
 export default function App() {
-  const [availableSlots, setAvailableSlots] = useState({});  
+  const [availableSlots, setAvailableSlots] = useState({});
   const [startDate, setStartDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [duration, setDuration] = useState("");
   const [finish, setFinish] = useState("");
   const [message, setMessage] = useState("");
 
-  
-  const sendDurationToParent = (hours) => {    
+
+  const sendDurationToParent = (hours) => {
     setDuration(hours);
   }
-  
-  const sendTimeToParent = (time) => {    
+
+  const sendTimeToParent = (time) => {
     setStartTime(time);
   }
 
-  
+
   const sendDateToParent = (date) => {
-    console.log('date:'+date);
+    console.log('date:' + date);
     setStartDate(date);
   }
 
 
   function calcFinish(start, hours) {
-    return new Date(start.getTime() + hours*miliseconds_per_hour);
+    return new Date(start.getTime() + hours * miliseconds_per_hour);
   }
 
 
   function dateTime(date, time) {
-    return new Date(date + ' ' + time);
+    return new Date(date + ' ' + time + ' UTC');
   }
 
 
   //SUBMIT
   let handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('start date from TimeSelector:'+startDate);
+    console.log('start date from TimeSelector:' + startDate);
     const startDatetime = dateTime(startDate, startTime);
     const finishDatetime = calcFinish(startDatetime, duration);
     const post_str = JSON.stringify({
@@ -79,9 +104,10 @@ export default function App() {
       });
       let resJson = await res.json();
       if (res.status === 200) {
-        setMessage("Booked "+resourceDummyName+" for "+duration+' hours ('+startDatetime.toString()+'-'+finishDatetime.toString()+')');
+        setMessage("Booked " + resourceDummyName + " for " + duration + ' hours (' + startDatetime.toString() + '-' + finishDatetime.toString() + ')');
         setStartDate("");
         setStartTime("");
+        // here I should call something to call API again, reload data and populate drop-downs
       } else {
         setMessage("An error occured");
       }
@@ -98,19 +124,26 @@ export default function App() {
         <img src={resourceShareLogo} className="App-logo" alt="logo" />
         <h1>Share Hub</h1>
       </header>
+      
       <div>
         <article className="Book-element">
-          <h2>Book {resourceDummyName}</h2>
-          <form onSubmit={handleSubmit}>
-            <TimeslotSelector sendDateToParent={sendDateToParent} sendTimeToParent={sendTimeToParent} sendDurationToParent={sendDurationToParent}/>
-              {/* // {timeslotsDummy}  */}
-            <button type = "submit">
-              <p>
-                Book now
-              </p>
-            </button>
-            <div className="message">{message ? <p>{message}</p> : null}</div>
-          </form>
+          <ThemeProvider theme={theme}>
+            <div className='wrapper'>
+              <Stack spacing={2}>
+                <TimeslotSelector
+                  sendDateToParent={sendDateToParent}
+                  sendTimeToParent={sendTimeToParent}
+                  sendDurationToParent={sendDurationToParent}
+                />
+                <form onSubmit={handleSubmit}>
+                  <Button variant="contained" type="submit">
+                    Reserve {resourceDummyName}
+                  </Button>
+                </form>
+                <div className="message">{message ? <p>{message}</p> : null}</div>
+              </Stack>
+            </div>
+          </ThemeProvider>
         </article>
       </div>
     </div>
@@ -126,8 +159,8 @@ class TimeslotSelector extends React.Component {
     this.sendDateToParent = props.sendDateToParent;
     this.sendTimeToParent = props.sendTimeToParent;
     this.sendDurationToParent = props.sendDurationToParent;
-    this.handleFirstLevelChange = this.handleFirstLevelChange.bind(this);
-    this.handleSecondLevelChange = this.handleSecondLevelChange.bind(this);
+    this.handleDateChange = this.handleDateChange.bind(this);
+    this.handleTimeChange = this.handleTimeChange.bind(this);
     this.handleDurationChange = this.handleDurationChange.bind(this);
 
     this.state = {
@@ -138,56 +171,91 @@ class TimeslotSelector extends React.Component {
     }
   }
 
-  
+
 
   handleDurationChange(event) {
-    console.log('event value: ' + event.target.value.toString())
-    fetch(list_bookings_url+event.target.value).then(
+    var duration = event.target.value.substring(0, 1);
+    console.log('event value: ' + duration)
+    fetch(list_bookings_url + duration).then(
       response => response.json()
     ).then(
       data => {
-        this.setState({availableSlots: data});
+        this.setState({ availableSlots: data });
       }
     );
-    this.setState({ duration: event.target.value.toString() });
-    this.sendDurationToParent(event.target.value.toString());
+    this.setState({ duration: duration });
+    this.sendDurationToParent(duration);
   }
-  
-  handleFirstLevelChange(event) {
+
+  handleDateChange(event) {
     this.setState({ firstLevel: event.target.value });
     this.sendDateToParent(event.target.value);
   }
 
-  handleSecondLevelChange(event) {
+  handleTimeChange(event) {
     this.setState({ secondLevel: event.target.value });
     this.sendTimeToParent(event.target.value);
   }
 
+  timezone(times) {
+    var tz_times = new Array(times.length);
+    for (let t = 0; t < times.length; t++) {
+      tz_times[t] = new Date(times[t] + ' UTC');
+      tz_times[t] = tz_times[t].time();
+    }
+  }
+
   render() {
-    const renderOption = item => <option key={item} value={item}>{item}</option>
+    const renderOption = item => <MenuItem key={item} value={item}>{item}</MenuItem>
     const firstLevelOptions = Object.keys(this.state.availableSlots).map(renderOption)
-    const secondLevelOptions = this.state.firstLevel.length ? this.state.availableSlots[this.state.firstLevel].map(renderOption): []
+    console.log('this.state.availableSlots[this.state.firstLevel]: ' + this.state.availableSlots[this.state.firstLevel])
+    // console.log('this.state.availableSlots[this.state.firstLevel].length: '+this.state.availableSlots[this.state.firstLevel].length)
+    // var tz_times = this.timezone(this.state.availableSlots[this.state.firstLevel]);
+    // console.log('timzoned times: '+ tz_times);
+    const secondLevelOptions = this.state.firstLevel.length ? this.state.availableSlots[this.state.firstLevel].map(renderOption) : []
 
 
     return (
-      <Stack className="Selector-container">
+      <Stack spacing={2}>
 
-        <div className="App-selector">
-          <select id='durationSelector' className="slot-selector" onChange={this.handleDurationChange} >
-            {allowed_durations.map(renderOption)}
-          </select>
-        </div>
-        
-        <div className="App-selector">
-          <select className="slot-selector" onChange={this.handleFirstLevelChange} >
-            {firstLevelOptions}
-          </select>
+        <div className='wrapper'>
+          <FormControl fullWidth>
+            <InputLabel id="durationSelector">Duration</InputLabel>
+            <Select
+              labelId="durationSelector"
+              label="Duration"
+              onChange={this.handleDurationChange}
+            >
+              {allowed_durations.map(renderOption)}
+            </Select>
+          </FormControl>
         </div>
 
-        <div className="App-selector">
-          <select className="slot-selector" onChange={this.handleSecondLevelChange} >
-            {secondLevelOptions}
-          </select>
+
+        <div className='wrapper'>
+          <FormControl fullWidth>
+            <InputLabel id="dateSelector">Date</InputLabel>
+            <Select
+              labelId="dateSelector"
+              label="Date"
+              onChange={this.handleDateChange}
+            >
+              {firstLevelOptions}
+            </Select>
+          </FormControl>
+        </div>
+
+        <div className='wrapper'>
+          <FormControl fullWidth>
+            <InputLabel id="timeSelector">Start time</InputLabel>
+            <Select
+              labelId="timeSelector"
+              label="Start time"
+              onChange={this.handleTimeChange}
+            >
+              {secondLevelOptions}
+            </Select>
+          </FormControl>
         </div>
       </Stack>
     )

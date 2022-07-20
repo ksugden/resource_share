@@ -72,3 +72,13 @@ button, .button, .slot-selector {
   padding: 3% 15%;
   color:rgb(225, 134, 195)
 }
+
+.wrapper {
+  width: 90vw; /* 90% of viewport */
+  width: clamp(16rem,15vw,25rem); /* Newer way to calculate size of elements */
+  margin-left: auto; /*centre the elements*/
+  margin-right: auto;
+  padding-left: clamp(1.09rem,1rem + 0.47vw,1.33rem);
+  padding-right: clamp(1.09rem,1rem + 0.47vw,1.33rem);
+  position: relative;
+}
