@@ -19,11 +19,9 @@ class Home extends Component {
                 <img src={resourceShareLogo} className="App-logo" alt="logo" />
                 <h1>Share Hub</h1>
                 </header>
-                <NavLink to="/select-resource">Show select resource</NavLink>
-                <NavLink to="/app">Show booking app</NavLink>
             </div>
             <Routes>
-                <Route path="/select-resource" element={<SelectResource />} />
+                <Route path="/" element={<SelectResource />} />
                 <Route path="/app" element={<App />} />
             </Routes>
         </BrowserRouter>
