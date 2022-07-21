@@ -1,4 +1,5 @@
 import resourceShareLogo from './resourceShareLogo.png';
+import chestnut from './chestnut.png';
 import './App.css';
 import React, { useState, useEffect } from 'react';
 import Stack from '@mui/material/Stack';
@@ -104,7 +105,7 @@ export default function App() {
       });
       let resJson = await res.json();
       if (res.status === 200) {
-        setMessage("Booked " + resourceDummyName + " for " + duration + ' hours (' + startDatetime.toString() + '-' + finishDatetime.toString() + ')');
+        console.log("Booked " + resourceDummyName + " for " + duration + ' hours (' + startDatetime.toString() + '-' + finishDatetime.toString() + ')');
         setStartDate("");
         setStartTime("");
         // here I should call something to call API again, reload data and populate drop-downs
@@ -129,7 +130,8 @@ export default function App() {
         <article className="Book-element">
           <ThemeProvider theme={theme}>
             <div className='wrapper'>
-              <Stack spacing={2}>
+              <Stack spacing={4}>
+              <img className='round-img' src={chestnut} id="id"></img>
                 <TimeslotSelector
                   sendDateToParent={sendDateToParent}
                   sendTimeToParent={sendTimeToParent}
