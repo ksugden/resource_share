@@ -102,6 +102,12 @@ export default function App() {
     return new Date(date + ' ' + time + ' UTC');
   }
 
+  function getResourceImage(resourceId) {
+    if (resourceId == 1) return chestnut;
+    else if (resourceId == 2) return icelandic;
+    else return null;
+  }
+
 
   //SUBMIT
   let handleSubmit = async (e) => {
@@ -149,7 +155,9 @@ export default function App() {
           <ThemeProvider theme={theme}>
             <div className='wrapper'>
               <Stack spacing={4}>
-                <img className='round-img' src={chestnut} id="id"></img>
+              <div className='thumb'>
+                <img src={getResourceImage(resourceId)} id="id"></img>
+                </div>
                 <TimeslotSelector
                   resourceId={resourceId}
                   sendDateToParent={sendDateToParent}
