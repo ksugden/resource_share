@@ -6,7 +6,6 @@ from dateutil import parser
 import config
 
 
-
 def parse_bookings_response(bookings_response: List[Dict[str,str]]) -> List[Dict[str, datetime]]:
     '''
     >>> test_json = [
@@ -41,6 +40,7 @@ def available_intervals(bookings, start=None, finish=None) -> List[Dict[str, dat
     >>> tzbooking_3 = {"start": datetime(2022,7,20,18,0,0, tzinfo=timezone.utc), "finish": datetime(2022,7,20,19,0,0, tzinfo=timezone.utc)}
     >>> tzbooking_4 = {"start": datetime(2022,7,21,10,0,0, tzinfo=timezone.utc), "finish": datetime(2022,7,21,12,0,0, tzinfo=timezone.utc)}
     >>> my_tzbookings = [tzbooking_1, tzbooking_2, tzbooking_3, tzbooking_4]
+    >>> my_empty_bookings = []
     >>> available_intervals(my_bookings, datetime(2022,7,20,9,0,0), datetime(2022,7,20,17,0,0))
     [{'start': datetime.datetime(2022, 7, 20, 9, 0), 'finish': datetime.datetime(2022, 7, 20, 10, 0)}, {'start': datetime.datetime(2022, 7, 20, 11, 0), 'finish': datetime.datetime(2022, 7, 20, 12, 0)}, {'start': datetime.datetime(2022, 7, 20, 14, 0), 'finish': datetime.datetime(2022, 7, 20, 17, 0)}]
     >>> available_intervals(my_bookings, datetime(2022,7,20,10,30,0), datetime(2022,7,20,15,0,0))
@@ -49,7 +49,9 @@ def available_intervals(bookings, start=None, finish=None) -> List[Dict[str, dat
     [{'start': datetime.datetime(2022, 7, 20, 19, 0), 'finish': datetime.datetime(2022, 7, 20, 22, 0)}]
     >>> available_intervals(my_tzbookings, datetime(2022,7,20,18,0,0, tzinfo=timezone.utc), datetime(2022,7,20,22,0,0, tzinfo=timezone.utc))
     [{'start': datetime.datetime(2022, 7, 20, 19, 0, tzinfo=datetime.timezone.utc), 'finish': datetime.datetime(2022, 7, 20, 22, 0, tzinfo=datetime.timezone.utc)}]
-    '''    
+    >>> available_intervals(my_empty_bookings, datetime(2022,7,20,9,0,0), datetime(2022,7,20,17,0,0))
+    [{'start': datetime.datetime(2022, 7, 20, 9, 0), 'finish': datetime.datetime(2022, 7, 20, 17, 0)}]
+    '''
     start = start or datetime.now(timezone.utc)
     finish = finish or (start + timedelta(days=config.ADVANCE_BOOK_DAYS_LIMIT))
 
@@ -59,24 +61,24 @@ def available_intervals(bookings, start=None, finish=None) -> List[Dict[str, dat
         and booking["start"] < finish
     ]
 
-    if len(relevant_bookings)==0:
-        return
-    
     available_intervals = []
 
-    if start < relevant_bookings[0]['start']:
-        available_intervals = [{'start': start, 'finish': relevant_bookings[0]['start']}]
+    if len(relevant_bookings) == 0:
+        available_intervals = [{'start': start, 'finish': finish}]
 
-    for index, booking in enumerate(relevant_bookings):
-        try:
-            available_intervals.append({'start': booking['finish'], 'finish': relevant_bookings[index+1]['start']})
-        except IndexError:
-            pass
+    else:
+        if start < relevant_bookings[0]['start']:
+            available_intervals = [{'start': start, 'finish': relevant_bookings[0]['start']}]
 
-    if finish > relevant_bookings[-1]['finish']:
-      available_intervals.append({'start': relevant_bookings[-1]['finish'], 'finish': finish})
+        for index, booking in enumerate(relevant_bookings):
+            try:
+                available_intervals.append({'start': booking['finish'], 'finish': relevant_bookings[index+1]['start']})
+            except IndexError:
+                pass
 
-    
+        if finish > relevant_bookings[-1]['finish']:
+            available_intervals.append({'start': relevant_bookings[-1]['finish'], 'finish': finish})
+
     return available_intervals
 
 
@@ -90,7 +92,7 @@ def round_up_hour(dt) -> datetime:
     if rounded_datetime != dt:
         dt = dt + timedelta(hours=1)
         rounded_datetime = datetime(dt.year, dt.month, dt.day, dt.hour, tzinfo=dt.tzinfo)
-    
+
     return rounded_datetime
 
 
@@ -128,7 +130,7 @@ def interval_slot_starts(start, finish, hours=1) -> List[datetime]:
         delta = last_slot_start - first_slot_start + timedelta(hours=1)
         number_of_slots = int(delta / timedelta(hours=1))
         slots = [first_slot_start + timedelta(hours=x) for x in range(0,number_of_slots)]
-    
+
     return slots
 
 
@@ -171,7 +173,7 @@ def map_slot_starts(slot_starts) -> Dict[str, List[str]]:
     mapped_slot_starts = {}
     for start in slot_starts:
         mapped_slot_starts.setdefault(format_date(start),[]).append(format_time(start))
-    
+
     return mapped_slot_starts
 
 
@@ -187,7 +189,8 @@ def get_slot_starts(bookings_response, duration, start, finish) -> Dict[str, Lis
     ... "resource_id": "1", "start": "2022-08-07 11:00:00.000000"}]
     >>> get_slot_starts(test_json, 2, datetime(2022,7,31,8), datetime(2022,8,1))
     {'2022-07-31': ['08:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']}
-    >>> get_slot_starts(test_json, 1, datetime(2022,7,11,8), datetime(2022,7,12))
+    >>> get_slot_starts(test_json, 1, datetime(2022,7,11,8), datetime(2022,7,11,10))
+    {'2022-07-11': ['08:00', '09:00']}
     >>> get_slot_starts(test_json, 6, datetime(2022,7,30,8), datetime(2022,8,1,10))
     {'2022-07-30': ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'], '2022-07-31': ['00:00', '01:00', '02:00', '03:00', '04:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'], '2022-08-01': ['00:00', '01:00', '02:00', '03:00', '04:00']}
     '''
