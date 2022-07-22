@@ -150,9 +150,18 @@ export default function App() {
         <h1>Share Hub</h1>
       </header>
 
+     
+
       <div>
         <article className="Book-element">
           <ThemeProvider theme={theme}>
+          <div class="w3-sidebar" style={{width:250, marginLeft:20}}>
+      <h2>Horses</h2>
+      <ResourceList 
+                  sendResourceIdToParent={sendResourceIdToParent}
+                />
+</div>
+            
             <div className='wrapper'>
               <Stack spacing={4}>
               <div className='thumb'>
@@ -166,13 +175,10 @@ export default function App() {
                 />
                 <form onSubmit={handleSubmit}>
                   <Button variant="contained" type="submit">
-                    Reserve {resourceDummyName}
+                    Reserve me!
                   </Button>
                 </form>
                 <div className="message">{message ? <p>{message}</p> : null}</div>
-                <ResourceList 
-                  sendResourceIdToParent={sendResourceIdToParent}
-                />
               </Stack>
             </div>
           </ThemeProvider>
