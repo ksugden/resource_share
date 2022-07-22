@@ -26,6 +26,25 @@
 }
 
 
+.round-img {
+  margin-left: 40px;
+  border-radius: 10%;
+  width: 15vw;
+  height: auto;
+  align-self: center;
+}
+
+
+.thumb-img {
+  margin-left: 10px;
+  margin-right: 20px;
+  border-radius: 10%;
+  width: 5vw;
+  height: auto;
+  align-self: left;
+}
+
+
 .App-header {
   font-size: calc(10px + 1vmin);
   margin-left: 30px;
@@ -81,4 +100,20 @@ button, .button, .slot-selector {
   padding-left: clamp(1.09rem,1rem + 0.47vw,1.33rem);
   padding-right: clamp(1.09rem,1rem + 0.47vw,1.33rem);
   position: relative;
+}
+
+.thumb {
+  display: block;
+  overflow: hidden;
+  margin-left: auto; /*centre the elements*/
+  height: 210px;
+  width: 210px;
+  border-radius: 20px;
+}
+
+.thumb img {
+  display: block; /* Otherwise it keeps some space around baseline */
+  max-width: 150%;    /* over 100% means it will be cropped width-wise.  If 25% of image is uneeded, you can scale up to 150% */
+  max-height: 150%;
+  -ms-interpolation-mode: bicubic; /* Scaled images look a bit better in IE now */
 }
