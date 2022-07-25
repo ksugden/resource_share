@@ -64,3 +64,10 @@ def list_resources(type):
         KeyConditionExpression = Key('type').eq(type)
     )
     return response['Items']
+
+
+def get_resource(type, id):
+    response = resources_table.query(
+        KeyConditionExpression = Key('type').eq(type) & Key('id').eq(id)
+    )
+    return response['Items']

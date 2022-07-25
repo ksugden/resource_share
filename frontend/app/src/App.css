@@ -118,4 +118,4 @@ button, .button, .slot-selector {
   -ms-interpolation-mode: bicubic; /* Scaled images look a bit better in IE now */
 }
 
-.w3-sidebar{text-align: left; padding: 10px; height:100%;width:200px;background-color:white; border: 1pt;position:fixed!important;z-index:1;overflow:auto}
+.w3-sidebar{text-align: left; padding: 10px; height:100%;width:200px;background-color:white; position:fixed!important;z-index:1;overflow:auto}
