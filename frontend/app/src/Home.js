@@ -22,7 +22,7 @@ class Home extends Component {
             </div>
             <Routes>
                 <Route path="/" element={<SelectResource />} />
-                <Route path="/app" element={<App />} />
+                <Route path="/app/:type/:resource_id" element={<App />} />
             </Routes>
         </BrowserRouter>
       );

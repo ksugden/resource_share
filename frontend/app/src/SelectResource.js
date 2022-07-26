@@ -41,7 +41,7 @@ class SelectResource extends Component {
     handleSubmit = (e) => {
       e.preventDefault()
       console.log(this.state.selectedResource)
-      this.props.navigate('/app')
+      this.props.navigate('/app/' + this.state.selectedResource.type + '/' + this.state.selectedResource.id)
     }
 
     render() {

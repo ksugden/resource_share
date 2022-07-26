@@ -9,6 +9,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
+import { useParams } from "react-router-dom";
 
 const theme = createTheme({
   status: {
@@ -30,9 +31,7 @@ const theme = createTheme({
 
 // Test data
 const userDummyName = 'User A'; // comes from previous page
-const resource_id = 1; // comes from previous page
 const hours = 1; // could come from earlier drop-down
-const resourceDummyName = 'Dobbin' // comes from lookup on Resources table
 const timeslotsDummy = {
   'Wednesday 20-07': ['10:00', '11:00', '16:00'],
   'Thursday 21-07': ['09:00', '10:00', '11:00', '15:00', '16:00', '17:00'],
@@ -45,18 +44,34 @@ const miliseconds_per_hour = 60 * 60 * 1000;
 
 //URLS
 const api_url = "https://5eo5juhaf6.execute-api.eu-west-1.amazonaws.com/v1/";
-const list_bookings_url = api_url + "list_bookings?id=" + resource_id + "&hours=";
 const make_booking_url = api_url + "add_booking";
 
 
 export default function App() {
   const [availableSlots, setAvailableSlots] = useState({});
+  const [resourceName, setResourceName] = useState("");
+  const [resourceType, setResourceType] = useState("");
   const [startDate, setStartDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [duration, setDuration] = useState("");
   const [finish, setFinish] = useState("");
   const [message, setMessage] = useState("");
+  let { type, resource_id } = useParams();
+  const get_resource_url = api_url + "get_resource/" + type + "/" + resource_id 
+  const list_bookings_url = api_url + "list_bookings?id=" + resource_id + "&hours=";
 
+
+  useEffect(() => {
+    fetch(get_resource_url).then(
+      response => response.json()
+    ).then(
+      data => {
+        console.log(data)
+        setResourceName(data.name );
+        setResourceType(data.type );
+      }
+    );
+  }, [])
 
   const sendDurationToParent = (hours) => {
     setDuration(hours);
@@ -103,7 +118,7 @@ export default function App() {
       });
       let resJson = await res.json();
       if (res.status === 200) {
-        setMessage("Booked " + resourceDummyName + " for " + duration + ' hours (' + startDatetime.toString() + '-' + finishDatetime.toString() + ')');
+        setMessage("Booked " + resourceName + " for " + duration + ' hours (' + startDatetime.toString() + '-' + finishDatetime.toString() + ')');
         setStartDate("");
         setStartTime("");
         // here I should call something to call API again, reload data and populate drop-downs
@@ -119,6 +134,7 @@ export default function App() {
 
   return (
     <div className="App">
+      { resourceName == "" ? <div>loading - {type}, {resource_id} </div> : 
       <div>
         <article className="Book-element">
           <ThemeProvider theme={theme}>
@@ -128,10 +144,11 @@ export default function App() {
                   sendDateToParent={sendDateToParent}
                   sendTimeToParent={sendTimeToParent}
                   sendDurationToParent={sendDurationToParent}
+                  listBookingsUrl={list_bookings_url}
                 />
                 <form onSubmit={handleSubmit}>
                   <Button variant="contained" type="submit">
-                    Reserve {resourceDummyName}
+                    Reserve {resourceName}
                   </Button>
                 </form>
                 <div className="message">{message ? <p>{message}</p> : null}</div>
@@ -140,6 +157,7 @@ export default function App() {
           </ThemeProvider>
         </article>
       </div>
+    }
     </div>
   );
 }
@@ -153,6 +171,7 @@ class TimeslotSelector extends React.Component {
     this.sendDateToParent = props.sendDateToParent;
     this.sendTimeToParent = props.sendTimeToParent;
     this.sendDurationToParent = props.sendDurationToParent;
+    this.listBookingsUrl = props.listBookingsUrl
     this.handleDateChange = this.handleDateChange.bind(this);
     this.handleTimeChange = this.handleTimeChange.bind(this);
     this.handleDurationChange = this.handleDurationChange.bind(this);
@@ -170,7 +189,7 @@ class TimeslotSelector extends React.Component {
   handleDurationChange(event) {
     var duration = event.target.value.substring(0, 1);
     console.log('event value: ' + duration)
-    fetch(list_bookings_url + duration).then(
+    fetch(this.listBookingsUrl + duration).then(
       response => response.json()
     ).then(
       data => {
@@ -219,6 +238,7 @@ class TimeslotSelector extends React.Component {
               labelId="durationSelector"
               label="Duration"
               onChange={this.handleDurationChange}
+              value={this.state.duration ? this.state.duration + " hours" : ""}
             >
               {allowed_durations.map(renderOption)}
             </Select>
@@ -233,6 +253,7 @@ class TimeslotSelector extends React.Component {
               labelId="dateSelector"
               label="Date"
               onChange={this.handleDateChange}
+              value={this.state.firstLevel}
             >
               {firstLevelOptions}
             </Select>
@@ -246,6 +267,7 @@ class TimeslotSelector extends React.Component {
               labelId="timeSelector"
               label="Start time"
               onChange={this.handleTimeChange}
+              value={this.state.secondLevel}
             >
               {secondLevelOptions}
             </Select>
