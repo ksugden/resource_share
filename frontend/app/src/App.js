@@ -58,7 +58,7 @@ export default function App() {
   const [message, setMessage] = useState("");
   let { type, resource_id } = useParams();
   const get_resource_url = api_url + "get_resource/" + type + "/" + resource_id 
-  const list_bookings_url = api_url + "list_bookings?id=" + resource_id + "&hours=";
+  const list_available_slots_url = api_url + "list_available_slots?id=" + resource_id + "&hours=";
 
 
   useEffect(() => {
@@ -144,7 +144,7 @@ export default function App() {
                   sendDateToParent={sendDateToParent}
                   sendTimeToParent={sendTimeToParent}
                   sendDurationToParent={sendDurationToParent}
-                  listBookingsUrl={list_bookings_url}
+                  listBookingsUrl={list_available_slots_url}
                 />
                 <form onSubmit={handleSubmit}>
                   <Button variant="contained" type="submit">
