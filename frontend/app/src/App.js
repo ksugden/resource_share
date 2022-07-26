@@ -21,7 +21,9 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
-
+import TimeslotSelector from './components/TimeslotSelector';
+import ResourceList from './components/ResourceList';
+import { api_url } from './Config';
 
 const theme = createTheme({
   status: {
@@ -57,11 +59,9 @@ const resourcesDummy = [
   { 'name': 'Pixie', 'id': 2, 'type': 'Horse' }
 ];
 
-const allowed_durations = ['1 hour', '2 hours', '3 hours', '4 hours'];
 const miliseconds_per_hour = 60 * 60 * 1000;
 
 //URLS
-const api_url = "https://5eo5juhaf6.execute-api.eu-west-1.amazonaws.com/v1/";
 const list_bookings_url = api_url + "list_bookings?id=" + resource_id + "&hours=";
 const make_booking_url = api_url + "add_booking";
 const list_resources_url = api_url + "list_resources?type=Horse";
@@ -207,164 +207,3 @@ export default function App() {
 }
 
 
-class ResourceList extends React.Component {
-
-  constructor(props) {
-    super(props)
-
-    this.handleResourceChange = this.handleResourceChange.bind(this);
-    this.sendResourceIdToParent = props.sendResourceIdToParent;
-    this.resources = props.resources;
-
-    this.state = {
-      selectedResource: (1)
-    }
-  }
-
-
-  handleResourceChange(event, resourceId) {
-    this.setState({ selectedResource: resourceId });
-    this.sendResourceIdToParent((resourceId).toString());
-  }
-
-
-
-  render() {
-    const miuRenderItem = item => <ListItem disablePadding key={item.id} >
-      <ListItemButton
-        selected={this.state.selectedResource === item.id}
-        onClick={(event) => this.handleResourceChange(event, item.id)}
-      >
-        <ListItemAvatar>
-          <Avatar alt={item.name} src={dummyPic} id={item.id}></Avatar>
-        </ListItemAvatar>
-        <ListItemText primary={item.name} />
-      </ListItemButton>
-    </ListItem>
-
-    return (
-      <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-        <nav aria-label="main mailbox folders">
-          <List>
-            {this.props.resources.map(miuRenderItem)}
-          </List>
-        </nav>
-      </Box>
-    )
-  }
-}
-
-
-
-class TimeslotSelector extends React.Component {
-  constructor(props) {
-    super(props)
-
-    this.sendDateToParent = props.sendDateToParent;
-    this.sendTimeToParent = props.sendTimeToParent;
-    this.resourceId = props.resourceId;
-    this.sendDurationToParent = props.sendDurationToParent;
-
-    this.handleDateChange = this.handleDateChange.bind(this);
-    this.handleTimeChange = this.handleTimeChange.bind(this);
-    this.handleDurationChange = this.handleDurationChange.bind(this);
-
-    this.state = {
-      duration: '',
-      availableSlots: { 'No dates calculated': ['no time', 'no time'] },
-      firstLevel: '',
-      secondLevel: ''
-    }
-  }
-
-
-
-  handleDurationChange(event) {
-    var duration = event.target.value.substring(0, 1);
-    var list_bookings_url = api_url + "list_bookings?id=" + this.props.resourceId + "&hours=";
-    console.log('event value: ' + duration)
-    this.props.resourceId != '' ?
-      console.log('fetching: ' + list_bookings_url + duration) : console.log('Not fetching!');
-
-    this.props.resourceId != '' ?
-      fetch(list_bookings_url + duration).then(
-        response => response.json()
-      ).then(
-        data => {
-          this.setState({ availableSlots: data });
-        }
-      ) : console.log('No resource Id selected');
-    this.setState({ duration: duration });
-    this.sendDurationToParent(duration);
-  }
-
-  handleDateChange(event) {
-    this.setState({ firstLevel: event.target.value });
-    this.sendDateToParent(event.target.value);
-  }
-
-  handleTimeChange(event) {
-    this.setState({ secondLevel: event.target.value });
-    this.sendTimeToParent(event.target.value);
-  }
-
-  timezone(times) {
-    var tz_times = new Array(times.length);
-    for (let t = 0; t < times.length; t++) {
-      tz_times[t] = new Date(times[t] + ' UTC');
-      tz_times[t] = tz_times[t].time();
-    }
-  }
-
-  render() {
-    const renderOption = item => <MenuItem key={item} value={item}>{item}</MenuItem>
-    const firstLevelOptions = Object.keys(this.state.availableSlots).map(renderOption)
-    const secondLevelOptions = this.state.firstLevel.length ? this.state.availableSlots[this.state.firstLevel].map(renderOption) : []
-
-
-    return (
-      <Stack spacing={2}>
-
-        <div className='wrapper'>
-          <FormControl fullWidth>
-            <InputLabel id="durationSelector">Duration</InputLabel>
-            <Select
-              labelId="durationSelector"
-              label="Duration"
-              onChange={this.handleDurationChange}
-            >
-              {allowed_durations.map(renderOption)}
-            </Select>
-          </FormControl>
-        </div>
-
-
-        <div className='wrapper'>
-          <FormControl fullWidth>
-            <InputLabel id="dateSelector">Date</InputLabel>
-            <Select
-              labelId="dateSelector"
-              label="Date"
-              onChange={this.handleDateChange}
-            >
-              {firstLevelOptions}
-            </Select>
-          </FormControl>
-        </div>
-
-        <div className='wrapper'>
-          <FormControl fullWidth>
-            <InputLabel id="timeSelector">Start time</InputLabel>
-            <Select
-              labelId="timeSelector"
-              label="Start time"
-              onChange={this.handleTimeChange}
-            >
-              {secondLevelOptions}
-            </Select>
-          </FormControl>
-        </div>
-      </Stack>
-    )
-  }
-}
